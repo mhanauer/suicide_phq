@@ -1,0 +1,57 @@
+---
+title: "Test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Load in the suicide data
+EHR Screener Review
+```{r}
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/ZeroSuicide/PHQ_9_resquests")
+dat_review = read.csv("EHR Screener Review.csv", header = TRUE, na.strings = c("N/A", "#VALUE!"))
+dat_review
+library(prettyR)
+library(dplyr)
+```
+What is the percentage of persons who died by suicide who received a PHQ-9 at any point while receiving services from Centerstone?
+```{r}
+
+describe.factor(dat_review$PHQ9..Y.N.)
+
+```
+What is the percentage of clients who died by suicide who answered greater than zero to Item 6 (subtle item)?
+```{r}
+
+dat_review = dat_review %>%
+  mutate(item_6_endorse = if_else(PHQ9.Item.6 > 0 ,1, 0))
+item_6_endorse =  describe.factor(dat_review$item_6_endorse, decr.order = FALSE)
+item_6_endorse = item_6_endorse[,2]
+item_6_endorse = t(data.frame(t(item_6_endorse)))
+item_6_endorse = data.frame(item_6_endorse = item_6_endorse)
+item_6_endorse
+```
+What is the percentage of clients who died by suicide who answered greater than zero to Item 9 (direct suicide)?
+```{r}
+dat_review = dat_review %>%
+  mutate(item_9_endorse = if_else(PHQ9.Item.9 > 0 ,1, 0))
+
+item_9_endorse =  describe.factor(dat_review$item_9_endorse, decr.order = FALSE)
+item_9_endorse = item_9_endorse[,2]
+item_9_endorse = t(data.frame(t(item_9_endorse)))
+item_9_endorse = data.frame(item_9_endorse = item_9_endorse)
+item_9_endorse
+
+```
+Combine the two and the get the difference
+```{r}
+item_6_9_endorse = cbind(item_6_endorse, item_9_endorse)
+item_6_9_endorse$diff_6_9 = item_6_9_endorse$item_6_endorse-item_6_9_endorse$item_9_endorse
+item_6_9_endorse = round(item_6_9_endorse,2)
+item_6_9_endorse[2,] = paste0(item_6_9_endorse[2,], "%")
+item_6_9_endorse
+write.csv(item_6_9_endorse, "item_6_9_endorse.csv")
+```
+
+
